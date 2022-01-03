@@ -1,2 +1,2 @@
 # webscribe
-A keylogger that sends the keystrokes to a webserver. This has NEVER been done before.
+Get key inputs and send them to a remote server once buffer is full.
